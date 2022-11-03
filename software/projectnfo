@@ -1,0 +1,3 @@
+PROJECT="zdbrg"
+ROOTDIR=$(pwd)
+MTARGET="${ROOTDIR}/rpi-${PROJECT}-buildroot/rpi-${PROJECT}-tree/overlay/usr/local/${PROJECT}"

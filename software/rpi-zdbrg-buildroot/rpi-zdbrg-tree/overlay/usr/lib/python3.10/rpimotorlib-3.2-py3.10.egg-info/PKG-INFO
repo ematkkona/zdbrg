@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: rpimotorlib
+Version: 3.2
+Summary: A python 3 library for various motors and servos to connect to a raspberry pi
+Home-page: https://github.com/gavinlyonsrepo/RpiMotorLib
+Download-URL: https://github.com/gavinlyonsrepo/RpiMotorLib/archive/3.2.tar.gz
+Author: Gavin Lyons
+Author-email: glyons66@hotmail.com
+License: GPL
+Keywords: TB6612FNG L9110S DRV8833 A3967 L298 servo motor library raspberry pi 28BYJ-48 A4988 stepper DRV8825
+Classifier: Programming Language :: Python :: 3.7
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Description-Content-Type: text/markdown
+
+# python 3 library
+ for various motors and servos
+ to connect to a raspberry pi

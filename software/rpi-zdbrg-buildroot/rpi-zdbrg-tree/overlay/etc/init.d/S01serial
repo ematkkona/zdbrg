@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Configure ttyAMA0: 115200 rtscts
+#
+
+source /root/.profile
+source /root/.version
+
+
+case "$1" in
+  start)
+	mount /data
+	rpi-ledoff
+	stty -F /dev/ttyAMA0 115200 crtscts
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	echo "" > /dev/ttyAMA0
+	echo "[ZdBrg] v${SYSVER}-${MAINVER}-${BUILDVER}" > /dev/ttyAMA0
+	rpi-ledon
+	;;
+  stop)
+	rpi-ledoff
+	umount /data
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+	;;
+  restart|reload)
+	"$0" stop
+	sleep 1 
+	"$0" start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

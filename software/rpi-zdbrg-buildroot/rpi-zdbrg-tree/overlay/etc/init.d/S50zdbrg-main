@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Start zdbrg main program ...
+#
+
+source /root/.profile
+TARGETPATH="/usr/local/zdbrg"
+if [ -f /data/payload/zdbrg.py ]; then
+	TARGETPATH="/data/payload"
+	echo "[ZdBrg:Init] Launching external payload" > /dev/ttyAMA0
+else
+	echo "[ZdBrg:Init] No external payload present" > /dev/ttyAMA0
+fi
+
+case "$1" in
+  start)
+	rpi-ledon
+        cd $TARGETPATH
+        /usr/bin/python3 zdbrg.py > /dev/null 2>&1
+	EXITCODE=$?
+        if [ $EXITCODE = 0 ]; then
+                echo "OK"
+		echo "[ZdBrg:Init] Clean exit =>Poweroff" > /dev/ttyAMA0
+		echo > /dev/ttyAMA0
+		rpi-ledoff
+		poweroff
+        else
+                echo "FAIL"
+		echo "[ZdBrg:Init] Exit(${EXITCODE}) =>Reboot" > /dev/ttyAMA0
+		echo > /dev/ttyAMA0
+		rpi-ledon
+		sleep 0.5
+		rpi-ledoff
+		sleep 0.5
+		rpi-ledon
+		sleep 0.5
+		rpi-ledoff
+		reboot
+        fi
+        ;;
+  stop)
+        echo "OK"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+

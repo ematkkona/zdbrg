@@ -1,0 +1,15 @@
+start_file=start_cd.elf
+fixup_file=fixup_cd.dat
+kernel=zImage
+kernel_address=0x200000
+initramfs rootfs.cpio.gz followkernel
+gpu_mem=16
+disable_poe_fan=1
+dtoverlay=disable-bt
+dtoverlay=disable-wifi
+dtoverlay=uart0,ctsrts
+enable_uart=1
+gpio=3,6,13,18,23=op,dh
+gpio=5,24=op,dl
+gpio=4,7,8,22,25,27=ip,pd
+gpio=21,26=ip,pu

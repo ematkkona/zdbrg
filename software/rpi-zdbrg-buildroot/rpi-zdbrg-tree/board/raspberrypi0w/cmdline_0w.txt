@@ -1,0 +1,1 @@
+console=tty1 quiet root=/dev/rootfs rootfstype=auto
