@@ -1,0 +1,3 @@
+BRVER="2022.08.1"
+BRTXZ="buildroot-${BRVER}.tar.xz"
+BRDL="https://buildroot.org/downloads/${BRTXZ}"

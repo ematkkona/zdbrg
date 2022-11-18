@@ -7,13 +7,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Do not procede if Makefile has been created
 if [ ! -f $DIR/Makefile ]; then
 	# Clean output directory
-	find $DIR -type f ! -name ".gitignore" ! -name "configure" -delete
+	find $DIR -type f ! -name ".gitignore" ! -name "configure.sh" -delete
 	find $DIR -empty -type d -delete
 	# Download buildroot if missing
-	if ! [ -d ../rpi-zdbrg-buildroot/buildroot ]; then
-		cd ../rpi-zdbrg-buildroot
+	cd ../rpi-zdbrg-buildroot
+	if ! [ -d buildroot ]; then
 		mkdir buildroot
-		source .brVer
+		source brver
 		wget ${BRDL}
 		[ $? != 0 ] && echo "Error downloading buildroot!" && exit 1
 		tar -xf ${BRTXZ} --strip-components=1 -C buildroot/
