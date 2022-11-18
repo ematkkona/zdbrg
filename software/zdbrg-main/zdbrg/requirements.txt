@@ -1,4 +1,1 @@
-RPi.GPIO
-serial
 RpiMotorLib
-pathlib

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ROOTDIR=$(pwd)
-IMAGE="${ROOTDIR}/rpi-zdbrg-buildroot/build_workdir/images/sdcard.img"
+IMAGE="${ROOTDIR}/software/build/images/sdcard.img"
 
-echo "ZdBrg-Image to SD-card utility"
+echo "ZdBrg Image to SD-card utility"
 
 if [ "${1}" != "" ]; then
 	TARGET="${1}"

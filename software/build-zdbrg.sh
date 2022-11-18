@@ -8,7 +8,6 @@ cd ${PROJECT}-main
 cd $DIR/build
 ./configure
 # Start build
-make
-printf "Done. Start your build:\n cd ${ROOTDIR}/rpi-${PROJECT}-buildroot/build_workdir\n make -j4\n"
+make && echo OK || echo ERROR
 
 exit 0
