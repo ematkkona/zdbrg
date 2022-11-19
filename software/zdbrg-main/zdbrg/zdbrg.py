@@ -6,7 +6,7 @@ from time import sleep
 from threading import Thread
 from enum import Enum
 
-Version = '0.97-181122rc'
+Version = '0.98-191122r1'
 
 # General configuration
 serialPort = '/dev/ttyAMA0'
@@ -15,7 +15,7 @@ CW = False
 CCW = True
 azZeroDir = CW
 elDown = False
-lostElTreshold = 5.0
+el_steps_back = 1
 minElevation = 0.0
 maxElevation = 90.0
 fullRevolution = 11250
@@ -109,14 +109,13 @@ def elsens_callback(channel):
         elevation_sensor = False
     else:
         elevation_sensor = True
-        if currPosition[1] > lostElTreshold and elDown and runState != RunStates.HOMING:
+        if elDown and runState == RunStates.RUNNING:
             killSigMsg = "[EL] Unexpected limit switch activation!"
             killSig = True
-            elevation.motor_stop()
-
+            GPIO.output(el_EN_pin, GPIO.HIGH)
 
 def elevation_to_home(stop):
-    global el_speed, elevation_sensor, el_EN_pin
+    global el_speed, elevation_sensor, el_EN_pin, el_steps_back
     GPIO.output(el_EN_pin, GPIO.LOW)
     el_speed = MSpeed.FAST.value
     drive_elevation(CCW, 40)
@@ -132,7 +131,7 @@ def elevation_to_home(stop):
         drive_elevation(CCW, 1)
     el_speed = MSpeed.FAST.value
     if not stop():
-        drive_elevation(CW, 5)
+        drive_elevation(CW, el_steps_back)
         currPosition[1] = minElevation
     GPIO.output(el_EN_pin, GPIO.HIGH)
 
@@ -179,7 +178,7 @@ def azimuth_to_home(stop):
 
 
 def target_handler(stop):
-    global currPosition, nextTarget, killSig, el_speed, az_speed, runState, elDown
+    global currPosition, nextTarget, killSig, el_speed, az_speed, runState, elDown, azZeroDir
     azimuth_updated = False
     direction = CW
     steps = 0
@@ -195,6 +194,7 @@ def target_handler(stop):
                 azdegscw = abs(((new_target[0] - currPosition[0] + 360) % 360))
                 if azdegscw < 180:
                     direction = CW
+                    azZeroDir = CCW
                     azdeg = azdegscw
                     p = currPosition[0] + azdeg
                     if p > 360:
@@ -202,6 +202,7 @@ def target_handler(stop):
                     currPosition[0] = p
                 else:
                     direction = CCW
+                    azZeroDir = CW
                     azdeg = (360 - azdegscw)
                     p = currPosition[0] - azdeg
                     if p < 0:
@@ -255,30 +256,30 @@ def sta_led_indicator(stop):
         match runState:
             case RunStates.HOMING:
                 GPIO.output(led1, GPIO.LOW)
-                sleep(0.3)
+                sleep(0.2)
                 GPIO.output(led1, GPIO.HIGH)
                 sleep(0.2)
             case RunStates.READY:
                 GPIO.output(led1, GPIO.LOW)
-                sleep(0.9)
+                sleep(0.95)
                 GPIO.output(led1, GPIO.HIGH)
-                sleep(0.1)
+                sleep(0.05)
             case RunStates.RUNNING:
                 GPIO.output(led1, GPIO.LOW)
-                sleep(0.4)
+                sleep(0.2)
                 GPIO.output(led1, GPIO.HIGH)
-                sleep(0.1)
+                sleep(0.15)
             case RunStates.ERROR:
                 GPIO.output(led1, GPIO.LOW)
-                sleep(0.1)
+                sleep(0.05)
                 GPIO.output(led1, GPIO.HIGH)
-                sleep(0.1)
+                sleep(0.05)
         if stop():
-            for x in range(10):
+            for x in range(25):
                 GPIO.output(led1, GPIO.LOW)
-                sleep(0.1)
+                sleep(0.025)
                 GPIO.output(led1, GPIO.HIGH)
-                sleep(0.1)
+                sleep(0.025)
             break
         sleep(0.1)
 
@@ -301,7 +302,7 @@ def serial_handler(stop):
         sleep(0.1)
     ser.flush()
     if killSigMsg == '':
-        homingok = f'[ZdBrg:Main] Ready! Azim. sensor active size: {az_hall_act_width}/{fullRevolution}\n\r'
+        homingok = f'[ZdBrg:Main] Ready! AZ HALL ACT: {az_hall_act_width}/{fullRevolution}\n\r'
         ser.write(homingok.encode())
         ser.write(zeropmsg.encode())
         while True:
@@ -333,20 +334,28 @@ def serial_handler(stop):
             elif data_str.startswith('SETAZ') and runState == RunStates.READY:
                 set_az = data_str.removeprefix('SETAZ')
                 if not set_az.replace('.', '', 1).isdigit():
-                    currPosition[0] = float(set_az)
-                    setazresp = f'AZ{str(set_az)}\n\r'
-                    ser.write(setazresp.encode())
+                    if set_az >= 0 and set_az <= 360:
+                        setazresp = f'AZ{currPosition[0]} => AZ{str(set_az)} OK\n\r'
+                        currPosition[0] = float(set_az)
+                        ser.write(setazresp.encode())
+                    else:
+                        setazerr = f'SETAZ: VALUE OUT OF RANGE\n\rAZ{currPosition[0]}\n\r'
+                        ser.write(setazerr.encode())
                 else:
-                    setazresp = f'AZSET FAIL {str(set_az)}\n\r'
+                    setazresp = f'SETAZ: INVALID INPUT\n\rAZ{currPosition[0]}\n\r'
                     ser.write(setazresp.encode())
             elif data_str.startswith('SETEL') and runState == RunStates.READY:
                 set_el = data_str.removeprefix('SETEL')
                 if not set_el.replace('.', '', 1).isdigit():
-                    currPosition[1] = float(set_el)
-                    setelresp = f'EL{str(set_el)}\n\r'
-                    ser.write(setelresp.encode())
+                    if float(set_el) > currPosition[1] and float(set_el) >= minElevation and float(set_el) <= maxElevation:
+                        setelerr = f'SETEL: VALUE OUT OF RANGE\n\rEL{currPosition[1]}\n\r'
+                        ser.write(setelerr.encode())
+                    else:
+                        setelresp = f'EL{currPosition[1]} => EL{str(set_el)} OK\n\r'
+                        currPosition[1] = float(set_el)
+                        ser.write(setelresp.encode())
                 else:
-                    setelresp = f'EL SET FAILED {str(set_el)}\n\r'
+                    setelresp = f'SETEL: INVALID INPUT\n\rEL{currPosition[1]}\n\r'
                     ser.write(setelresp.encode())
             elif data_str.startswith('AZ EL'):
                 elresp = f'AZ{str(currPosition[0])} EL{str(currPosition[1])}\n\r'
@@ -356,14 +365,14 @@ def serial_handler(stop):
                 if len(splitcmd) == 2:
                     fmt_az = splitcmd[0].removeprefix('AZ')
                     if not fmt_az.replace('.', '', 1).isdigit() or fmt_az == '':
-                        azresp = f'ERR: AZ{str(fmt_az)}\n\r'
+                        azresp = f'ERROR: AZ{str(fmt_az)}\n\r'
                         ser.write(azresp.encode())
                         fmt_az = currPosition[0]
                     if splitcmd[1].startswith("EL"):
                         fmt_el = splitcmd[1].removeprefix("EL")
                         if not fmt_el.replace('.', '', 1).isdigit() or fmt_el == '' or float(fmt_el) < minElevation or \
                                 float(fmt_el) > maxElevation:
-                            elresp = f'ERR: EL{str(str(fmt_el))}\n\r'
+                            elresp = f'ERROR: EL{str(fmt_el)}\n\r'
                             ser.write(elresp.encode())
                             fmt_el = currPosition[1]
                         nextTarget = [float(fmt_az), float(fmt_el)]
@@ -447,8 +456,6 @@ if serialListenerThread.is_alive():
 GPIO.output(led1, GPIO.LOW)
 GPIO.output(az_EN_pin, GPIO.HIGH)
 GPIO.output(el_EN_pin, GPIO.HIGH)
-
-# If we have an error message, we'll exit with code 1.
 if killSigMsg:
     sys.exit(1)
 sys.exit(0)

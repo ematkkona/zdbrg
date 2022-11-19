@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ROOTDIR=$(pwd)
-IMAGE="${ROOTDIR}/software/build/images/sdcard.img"
+IMAGE="${ROOTDIR}/build/images/sdcard.img"
 
 echo "ZdBrg Image to SD-card utility"
 

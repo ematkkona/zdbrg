@@ -1,0 +1,1 @@
+console=tty1 console=ttyAMA0,115200n8r kgdboc=ttyAMA0,115800n8r root=/dev/rootfs rootfstype=auto

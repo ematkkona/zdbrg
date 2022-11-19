@@ -16,7 +16,7 @@ case "$1" in
   start)
 	rpi-ledon
         cd $TARGETPATH
-        /usr/bin/python3 zdbrg.py > /dev/null 2>&1
+        /usr/bin/python3 zdbrg.py #> /dev/null 2>&1
 	EXITCODE=$?
         if [ $EXITCODE = 0 ]; then
                 echo "OK"

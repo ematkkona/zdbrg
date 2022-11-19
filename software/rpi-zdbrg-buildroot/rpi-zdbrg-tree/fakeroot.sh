@@ -3,8 +3,8 @@
 echo "fakeroot.sh"
 
 versions() {
-	echo "ZdBrg versions (-> /root/.version):"
-	source ${BASE_DIR}/../.brVer || exit 1
+	echo "Fetch version info (>> /root/.version):"
+	source ${BASE_DIR}/../rpi-zdbrg-buildroot/brver || exit 1
 	source ${BASE_DIR}/../../.ver || exit 1
 	MAIN=$(cat ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py | grep -m1 Version | cut -d "'" -f2) || exit 1
 	VTARGET="${TARGET_DIR}/root/.version"
@@ -17,7 +17,7 @@ versions() {
 }
 
 echo "Fetch latest main program ..."
-cp -f ${BASE_DIR}/../../zdbrg-main/zdbrg/zdbrg.py ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py
+cp -f ${BASE_DIR}/../zdbrg-main/zdbrg/zdbrg.py ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py
 if [ $? != 0 ]; then
 	echo "Err zdbrg.py"
 	exit 1
