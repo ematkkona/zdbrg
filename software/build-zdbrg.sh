@@ -2,7 +2,7 @@
 
 source projectnfo
 DIR=`pwd`
-echo $DIR
+mkdir -p rpi-zdbrg-buildroot/rpi-zdbrg-tree/datapart/payload
 cd ${PROJECT}-main
 ./build.sh
 cd ${DIR}
