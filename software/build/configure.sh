@@ -21,10 +21,8 @@ if [ ! -f $DIR/Makefile ]; then
 		rm -rf ${BRTXZ}
 		cd $DIR
 	fi
-	# Setup buidroot external tree
-	pwd
-	make BR2_EXTERNAL=$DIR/../rpi-zdbrg-buildroot/rpi-zdbrg-tree O=$DIR -C $DIR/../rpi-zdbrg-buildroot/buildroot/ 2> /dev/null > /dev/null
-	cp ../rpi-zdbrg-buildroot/rpi-zdbrg-tree/configs/zdbrg.config .config
+	# Make zdbrg defconfig (for raspberrypi0w)
+	make defconfig BR2_DEFCONFIG=$DIR/../rpi-zdbrg-buildroot/rpi-zdbrg-tree/configs/raspberrypi0w_defconfig BR2_EXTERNAL=$DIR/../rpi-zdbrg-buildroot/rpi-zdbrg-tree/ O=$DIR -C $DIR/../rpi-zdbrg-buildroot/buildroot/
 fi
 
 exit 0
