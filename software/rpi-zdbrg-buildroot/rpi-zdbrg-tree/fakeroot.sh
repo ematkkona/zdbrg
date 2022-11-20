@@ -4,8 +4,7 @@ echo "fakeroot.sh"
 
 versions() {
 	echo "Fetch version info (>> /root/.version):"
-	source ${BASE_DIR}/../rpi-zdbrg-buildroot/brver || exit 1
-	source ${BASE_DIR}/../../.ver || exit 1
+	source ${BASE_DIR}/../.envvars || exit 1
 	MAIN=$(cat ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py | grep -m1 Version | cut -d "'" -f2) || exit 1
 	VTARGET="${TARGET_DIR}/root/.version"
 	[ -f ${VTARGET} ] || rm -rf ${VTARGET}
@@ -13,13 +12,13 @@ versions() {
 	echo "SYSVER='${SYSVER}'" > ${VTARGET}
 	echo "MAINVER='${MAIN}'" >> ${VTARGET}
 	echo "BUILDVER='br-${BRVER}'" >> ${VTARGET}
-	cat ${VTARGET}
+	cat ${VTARGET} > ${BASE_DIR}/../build/version
 }
 
 echo "Fetch latest main program ..."
-cp -f ${BASE_DIR}/../zdbrg-main/zdbrg/zdbrg.py ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py
+cp -f ${BASE_DIR}/../payload/zdbrg.py ${TARGET_DIR}/usr/local/zdbrg/zdbrg.py
 if [ $? != 0 ]; then
-	echo "Err zdbrg.py"
+	echo "Error copying payload/zdbrg.py"
 	exit 1
 fi
 cd ${TARGET_DIR}/etc/init.d

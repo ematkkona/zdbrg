@@ -1,3 +1,7 @@
 PROJECT="zdbrg"
+SYSVER='1.0'
 ROOTDIR=$(pwd)
 MTARGET="${ROOTDIR}/rpi-${PROJECT}-buildroot/rpi-${PROJECT}-tree/overlay/usr/local/${PROJECT}"
+BRVER="2022.08.1"
+BRTXZ="buildroot-${BRVER}.tar.xz"
+BRDL="https://buildroot.org/downloads/${BRTXZ}"
