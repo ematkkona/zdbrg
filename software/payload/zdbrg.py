@@ -110,9 +110,9 @@ def elsens_callback(channel):
     else:
         elevation_sensor = True
         if elDown and runState == RunStates.RUNNING:
-            killSigMsg = "[EL] Unexpected limit switch activation!"
-            killSig = True
             GPIO.output(el_EN_pin, GPIO.HIGH)
+            killSigMsg = "[EL] Unexpected limit switch activation!"
+
 
 def elevation_to_home(stop):
     global el_speed, elevation_sensor, el_EN_pin, el_steps_back
